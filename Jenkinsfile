@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+    skipDefaultCheckout(true)
+}
 
     environment {
         TF_IN_AUTOMATION = "true"
@@ -12,7 +15,28 @@ pipeline {
                 checkout scm
             }
         }
+      stage('Check Changes') {
+    steps {
+        script {
 
+            def changedFiles = sh(
+                script: "git diff --name-only HEAD~1 HEAD",
+                returnStdout: true
+            ).trim()
+
+            echo "Changed Files:"
+            echo changedFiles
+
+            if (!(changedFiles =~ /^terraform\//) &&
+                !(changedFiles =~ /^ansible\//) &&
+                !(changedFiles =~ /^Jenkinsfile$/)) {
+
+                currentBuild.result = "NOT_BUILT"
+                error("No Infrastructure changes detected.")
+            }
+        }
+    }
+}
         stage('Terraform Init') {
             steps {
                 dir('terraform') {

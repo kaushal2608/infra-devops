@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+    skipDefaultCheckout(true)
+}
 
     environment {
         IMAGE_NAME = "infra-devops"
@@ -13,6 +16,28 @@ pipeline {
                 checkout scm
             }
         }
+
+        stage('Check Changes') {
+    steps {
+        script {
+
+            def changedFiles = sh(
+                script: "git diff --name-only HEAD~1 HEAD",
+                returnStdout: true
+            ).trim()
+
+            echo "Changed Files:"
+            echo changedFiles
+
+            if (!(changedFiles =~ /^app\//) &&
+                !(changedFiles =~ /^Jenkinsfile-App$/)) {
+
+                currentBuild.result = "NOT_BUILT"
+                error("No Application changes detected.")
+            }
+        }
+    }
+}
 
         stage('Build Docker Image') {
             steps {
