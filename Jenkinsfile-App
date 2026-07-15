@@ -30,21 +30,13 @@ pipeline {
             }
         }
 
-        stage('Generate Inventory') {
-            steps {
-                script {
-                    def ip = sh(
-                        script: "cd terraform && terraform output -raw public_ip",
-                        returnStdout: true
-                    ).trim()
-
-                    writeFile file: 'ansible/inventory', text: """
-[web]
-${ip} ansible_user=ubuntu
-"""
-                }
-            }
-        }
+  stage('Copy Inventory') {
+    steps {
+        sh '''
+        cp /var/lib/jenkins/workspace/infra-pipeline/ansible/inventory ansible/inventory
+        '''
+    }
+}
 
         stage('Deploy Application') {
             steps {
