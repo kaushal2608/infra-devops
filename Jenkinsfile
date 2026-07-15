@@ -45,15 +45,30 @@ pipeline {
             }
         }
 
-    }
+        stage('Generate Inventory') {
+            steps {
+                script {
+                    def ip = sh(
+                        script: "cd terraform && terraform output -raw public_ip",
+                        returnStdout: true
+                    ).trim()
 
-    post {
-        success {
-            echo 'Infrastructure Created Successfully.'
+                    sh """
+                    sed -i 's/SERVER_IP/${ip}/g' ansible/inventory
+                    """
+                }
+            }
         }
 
-        failure {
-            echo 'Pipeline Failed.'
+        stage('Install Docker using Ansible') {
+            steps {
+                sh '''
+                ansible-playbook \
+                -i ansible/inventory \
+                ansible/docker-install.yml
+                '''
+            }
         }
+
     }
 }
