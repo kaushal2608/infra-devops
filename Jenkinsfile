@@ -7,7 +7,7 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
@@ -35,6 +35,25 @@ pipeline {
                     sh 'terraform plan -out=tfplan'
                 }
             }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Infrastructure Created Successfully.'
+        }
+
+        failure {
+            echo 'Pipeline Failed.'
         }
     }
 }
