@@ -1,0 +1,2 @@
+[web]
+SERVER_IP ansible_user=ubuntu
