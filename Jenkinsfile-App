@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "infra-devops"
+        IMAGE_TAR = "infra-devops.tar"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('app') {
+                    sh 'docker build -t ${IMAGE_NAME}:latest .'
+                }
+            }
+        }
+
+        stage('Save Docker Image') {
+            steps {
+                dir('app') {
+                    sh 'docker save ${IMAGE_NAME}:latest -o ${IMAGE_TAR}'
+                }
+            }
+        }
+
+        stage('Generate Inventory') {
+            steps {
+                script {
+                    def ip = sh(
+                        script: "cd terraform && terraform output -raw public_ip",
+                        returnStdout: true
+                    ).trim()
+
+                    writeFile file: 'ansible/inventory', text: """
+[web]
+${ip} ansible_user=ubuntu
+"""
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                sshagent(credentials: ['ec2-ssh-key']) {
+                    dir('ansible') {
+                        sh 'ansible-playbook deploy-app.yml'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Application deployed successfully.'
+        }
+
+        failure {
+            echo 'Application deployment failed.'
+        }
+    }
+}
