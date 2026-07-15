@@ -1,14 +1,39 @@
 pipeline {
     agent any
 
+    environment {
+        TF_IN_AUTOMATION = "true"
+    }
+
     stages {
-        stage('Verify Tools') {
+
+        stage('Checkout Code') {
             steps {
-                sh 'echo "Checking installed tools..."'
-                sh 'terraform -version'
-                sh 'ansible --version'
-                sh 'docker --version'
-                sh 'git --version'
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform validate'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
     }
