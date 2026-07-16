@@ -68,14 +68,15 @@ ${ips[1]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh
 }
 
         stage('Install Docker using Ansible') {
-            steps {
-                sh '''
-                ansible-playbook \
-                -i ansible/inventory \
-                ansible/docker-install.yml
-                '''
-            }
-        }
+    steps {
+        sh '''
+        ANSIBLE_CONFIG=ansible/ansible.cfg \
+        ansible-playbook \
+        -i ansible/inventory \
+        ansible/docker-install.yml
+        '''
+    }
+}
 
     }
 }
