@@ -46,19 +46,26 @@ pipeline {
         }
 
         stage('Generate Inventory') {
-            steps {
-                script {
-                    def ip = sh(
-                        script: "cd terraform && terraform output -raw public_ip",
-                        returnStdout: true
-                    ).trim()
 
-                    sh """
-                    sed -i 's/SERVER_IP/${ip}/g' ansible/inventory
-                    """
-                }
-            }
+    steps {
+
+        script {
+
+            def ips = sh(
+                script: "cd terraform && terraform output -json public_ips | jq -r '.[]'",
+                returnStdout: true
+            ).trim().split("\n")
+
+            writeFile file: "ansible/inventory", text: """
+[web]
+${ips[0]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
+${ips[1]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
+"""
         }
+
+    }
+
+}
 
         stage('Install Docker using Ansible') {
             steps {
