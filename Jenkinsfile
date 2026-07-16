@@ -40,42 +40,42 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('terraform') {
-                    sh 'terraform apply -auto-approve tfplan'
+                    sh 'terraform destroy -auto-approve tfplan'
                 }
             }
         }
 
-        stage('Generate Inventory') {
+//         stage('Generate Inventory') {
 
-    steps {
+//     steps {
 
-        script {
+//         script {
 
-            def ips = sh(
-                script: "cd terraform && terraform output -json public_ips | jq -r '.[]'",
-                returnStdout: true
-            ).trim().split("\n")
+//             def ips = sh(
+//                 script: "cd terraform && terraform output -json public_ips | jq -r '.[]'",
+//                 returnStdout: true
+//             ).trim().split("\n")
 
-            writeFile file: "ansible/inventory", text: """
-[web]
-${ips[0]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
-${ips[1]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
-"""
-        }
+//             writeFile file: "ansible/inventory", text: """
+// [web]
+// ${ips[0]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
+// ${ips[1]} ansible_user=ubuntu ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/terraform.pem
+// """
+//         }
 
-    }
+//     }
 
-}
+// }
 
-        stage('Install Docker using Ansible') {
-            steps {
-                sh '''
-                ansible-playbook \
-                -i ansible/inventory \
-                ansible/docker-install.yml
-                '''
-            }
-        }
+//         stage('Install Docker using Ansible') {
+//             steps {
+//                 sh '''
+//                 ansible-playbook \
+//                 -i ansible/inventory \
+//                 ansible/docker-install.yml
+//                 '''
+//             }
+//         }
 
     }
 }
