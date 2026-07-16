@@ -3,6 +3,9 @@ resource "aws_security_group" "app_sg" {
   name        = "infra-devops-sg"
   description = "Security Group for DevOps Project"
 
+  # Attach Security Group to Custom VPC
+  vpc_id = aws_vpc.devops_vpc.id
+
   ingress {
     description = "SSH"
 
@@ -24,10 +27,9 @@ resource "aws_security_group" "app_sg" {
   }
 
   egress {
-
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
 
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -35,5 +37,4 @@ resource "aws_security_group" "app_sg" {
   tags = {
     Name = "infra-devops-sg"
   }
-
 }
