@@ -13,20 +13,46 @@
         name: docker.io
         state: present
 
-    - name: Start Docker
+    - name: Start and Enable Docker
       service:
         name: docker
         state: started
-
-    - name: Enable Docker
-      service:
-        name: docker
         enabled: yes
 
-    - name: Verify Docker
-      command: docker --version
-      register: docker_version
+    - name: Create website directory
+      file:
+        path: /opt/website
+        state: directory
+        mode: '0755'
 
-    - name: Print Docker Version
+    - name: Copy index.html
+      copy:
+        src: files/index.html
+        dest: /opt/website/index.html
+        mode: '0644'
+
+    - name: Pull latest Nginx image
+      community.docker.docker_image:
+        name: nginx
+        source: pull
+
+    - name: Remove existing Nginx container
+      shell: docker rm -f nginx || true
+      changed_when: false
+
+    - name: Run Nginx container
+      shell: |
+        docker run -d \
+          --name nginx \
+          --restart unless-stopped \
+          -p 80:80 \
+          -v /opt/website:/usr/share/nginx/html:ro \
+          nginx:latest
+
+    - name: Verify running containers
+      command: docker ps
+      register: docker_ps
+
+    - name: Show running containers
       debug:
-        var: docker_version.stdout
+        var: docker_ps.stdout_lines
