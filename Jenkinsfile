@@ -13,31 +13,31 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform init'
-                }
-            }
-        }
+        // stage('Terraform Init') {
+        //     steps {
+        //         dir('terraform') {
+        //             sh 'terraform init'
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Validate') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform validate'
-                }
-            }
-        }
+        // stage('Terraform Validate') {
+        //     steps {
+        //         dir('terraform') {
+        //             sh 'terraform validate'
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Plan') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform plan -out=tfplan'
-                }
-            }
-        }
+        // stage('Terraform Plan') {
+        //     steps {
+        //         dir('terraform') {
+        //             sh 'terraform plan -out=tfplan'
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Apply') {
+        stage('Terraform destroy') {
             steps {
                 dir('terraform') {
                     sh 'terraform destroy -auto-approve tfplan'
