@@ -26,14 +26,24 @@ pipeline {
             }
         }
 
-        stage('Push Images') {
+       stage('Docker Login') {
     steps {
-        script {
-            docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-                sh 'docker push $IMAGE_NAME-frontend:$IMAGE_TAG'
-                sh 'docker push $IMAGE_NAME-backend:$IMAGE_TAG'
-            }
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            '''
         }
+    }
+}
+
+stage('Push Images') {
+    steps {
+        sh 'docker push $IMAGE_NAME-frontend:$IMAGE_TAG'
+        sh 'docker push $IMAGE_NAME-backend:$IMAGE_TAG'
     }
 }
 
