@@ -1,17 +1,11 @@
-output "public_ip" {
-
-  value = aws_instance.app_server.public_ip
-
+output "bastion_public_ip" {
+  value = aws_instance.bastion.public_ip
 }
 
-output "public_dns" {
-
-  value = aws_instance.app_server.public_dns
-
+output "application_private_ip" {
+  value = aws_instance.application.private_ip
 }
 
-output "instance_id" {
-
-  value = aws_instance.app_server.id
-
+output "database_private_ip" {
+  value = aws_instance.database.private_ip
 }
