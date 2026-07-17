@@ -27,13 +27,15 @@ pipeline {
         }
 
         stage('Push Images') {
-            steps {
-                withDockerRegistry([credentialsId: 'dockerhub-creds']) {
-                    sh 'docker push $IMAGE_NAME-frontend:$IMAGE_TAG'
-                    sh 'docker push $IMAGE_NAME-backend:$IMAGE_TAG'
-                }
+    steps {
+        script {
+            docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+                sh 'docker push $IMAGE_NAME-frontend:$IMAGE_TAG'
+                sh 'docker push $IMAGE_NAME-backend:$IMAGE_TAG'
             }
         }
+    }
+}
 
         stage('Deploy') {
             steps {
